@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { execFile as execFileCallback } from 'node:child_process';
 
 import type { CommitInfo } from '../../domain/CommitInfo.js';
-import type { ConflictRepository, MergeConflict } from '../../domain/MergeConflict.js';
+import type { ConflictRepository, MergeConflict, SupportedLanguage } from '../../domain/MergeConflict.js';
 
 const execFile = promisify(execFileCallback);
 
@@ -17,21 +17,26 @@ export class GitConflictRepository implements ConflictRepository {
     const relativePath = this.toRepositoryPath(filePath);
     await this.assertConflictStages(relativePath);
 
-    const [baseCode, oursCode, theirsCode, base, ours, theirs] = await Promise.all([
+    const baseReference = (await this.git(['merge-base', 'HEAD', 'MERGE_HEAD'])).trim();
+    const [base, ours, theirs, baseCode, oursCode, theirsCode, originalHash] = await Promise.all([
+      this.getCommitInfo(baseReference),
+      this.getCommitInfo('HEAD'),
+      this.getCommitInfo('MERGE_HEAD'),
       this.readStage(1, relativePath),
       this.readStage(2, relativePath),
       this.readStage(3, relativePath),
-      this.getCommitInfo('git merge-base HEAD MERGE_HEAD', true),
-      this.getCommitInfo('HEAD'),
-      this.getCommitInfo('MERGE_HEAD'),
+      this.getFileHash(relativePath),
     ]);
 
     return {
+      repositoryPath: this.repositoryRoot,
       filePath: relativePath,
-      baseCode,
-      oursCode,
-      theirsCode,
+      language: this.inferLanguage(relativePath),
+      base: baseCode,
+      ours: oursCode,
+      theirs: theirsCode,
       commits: { base, ours, theirs },
+      originalHash,
     };
   }
 
@@ -74,15 +79,12 @@ export class GitConflictRepository implements ConflictRepository {
     }
   }
 
-  private async getCommitInfo(ref: string, isCommand = false): Promise<CommitInfo> {
-    const target = isCommand
-      ? (await this.git(['merge-base', 'HEAD', 'MERGE_HEAD'])).trim()
-      : ref;
-    const output = await this.git(['show', '-s', '--format=%H%x00%an%x00%aI%x00%s', target]);
+  private async getCommitInfo(ref: string): Promise<CommitInfo> {
+    const output = await this.git(['show', '-s', '--format=%H%x00%an%x00%aI%x00%s', ref]);
     const [hash, author, date, message] = output.trimEnd().split('\0');
 
     if (!hash || !author || !date || message === undefined) {
-      throw new Error(`Unable to read commit metadata for "${target}".`);
+      throw new Error(`Unable to read commit metadata for "${ref}".`);
     }
 
     return { hash: hash.slice(0, 12), author, date, message };
@@ -114,5 +116,15 @@ export class GitConflictRepository implements ConflictRepository {
 
   private errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
+  }
+
+  private inferLanguage(filePath: string): SupportedLanguage {
+    switch (path.extname(filePath).toLowerCase()) {
+      case '.js': return 'javascript';
+      case '.ts': return 'typescript';
+      case '.jsx': return 'jsx';
+      case '.tsx': return 'tsx';
+      default: throw new Error(`Unsupported source extension for "${filePath}".`);
+    }
   }
 }

@@ -1,10 +1,12 @@
 import type { AstChange } from './AstChange.js';
 import type { MergeConflict } from './MergeConflict.js';
 
-export interface ConflictAnalysis extends MergeConflict {
+export interface ConflictAnalysis {
+  conflict: MergeConflict;
   astChanges: AstChange[];
-  fileHash: string;
 }
+
+export type { AstChange } from './AstChange.js';
 
 export interface AstAnalyzer {
   analyze(input: {

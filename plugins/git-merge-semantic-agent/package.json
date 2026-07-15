@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/mcp/server.ts",
+    "start": "tsx src/mcp/server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
@@ -11,11 +14,16 @@
   "dependencies": {
     "@babel/parser": "^7.28.4",
     "@babel/traverse": "^7.28.4",
-    "@babel/types": "^7.28.4"
+    "@babel/types": "^7.28.4",
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "dotenv": "^17.2.1",
+    "openai": "^5.12.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/babel__traverse": "^7.20.7",
     "@types/node": "^22.17.0",
+    "tsx": "^4.20.3",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }

@@ -10,18 +10,13 @@ export class AnalyzeConflict {
 
   async execute(filePath: string): Promise<ConflictAnalysis> {
     const conflict = await this.repository.getConflict(filePath);
-    const [fileHash, astChanges] = await Promise.all([
-      this.repository.getFileHash(filePath),
-      Promise.resolve(
-        this.analyzer.analyze({
-          baseCode: conflict.baseCode,
-          oursCode: conflict.oursCode,
-          theirsCode: conflict.theirsCode,
-          filePath,
-        }),
-      ),
-    ]);
+    const astChanges = this.analyzer.analyze({
+      baseCode: conflict.base,
+      oursCode: conflict.ours,
+      theirsCode: conflict.theirs,
+      filePath,
+    });
 
-    return { ...conflict, astChanges, fileHash };
+    return { conflict, astChanges };
   }
 }

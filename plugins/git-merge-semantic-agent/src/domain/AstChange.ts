@@ -2,11 +2,13 @@ export type AstChangeNodeType =
   | 'function'
   | 'parameter'
   | 'variable'
+  | 'rename'
   | 'validation'
   | 'return';
 
 export interface AstChange {
   branch: 'ours' | 'theirs';
-  nodeType: AstChangeNodeType;
+  kind: AstChangeNodeType;
   summary: string;
+  location?: string;
 }

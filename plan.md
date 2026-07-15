@@ -45,22 +45,29 @@ type CommitInfo = {
 
 type AstChange = {
   branch: 'ours' | 'theirs';
+  kind: 'function' | 'parameter' | 'variable' | 'rename' | 'validation' | 'return';
   summary: string;
-  nodeType: string;
+  location?: string;
 };
 
-type ConflictAnalysis = {
+type MergeConflict = {
+  repositoryPath: string;
   filePath: string;
+  language: 'javascript' | 'typescript' | 'jsx' | 'tsx';
+  base: string;
+  ours: string;
+  theirs: string;
   commits: {
     base: CommitInfo;
     ours: CommitInfo;
     theirs: CommitInfo;
   };
-  baseCode: string;
-  oursCode: string;
-  theirsCode: string;
+  originalHash: string;
+};
+
+type ConflictAnalysis = {
+  conflict: MergeConflict;
   astChanges: AstChange[];
-  fileHash: string;
 };
 
 type MergeProposal = {

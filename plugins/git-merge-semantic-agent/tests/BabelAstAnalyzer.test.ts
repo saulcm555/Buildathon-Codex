@@ -20,12 +20,14 @@ describe('BabelAstAnalyzer', () => {
 
     expect(changes).toContainEqual({
       branch: 'ours',
-      nodeType: 'parameter',
+      kind: 'parameter',
+      location: 'calcularTotal',
       summary: 'Parameter "monto" was renamed to "subtotal" in calcularTotal.',
     });
     expect(changes).toContainEqual({
       branch: 'theirs',
-      nodeType: 'validation',
+      kind: 'validation',
+      location: 'calcularTotal',
       summary: 'Validation "monto < 0" was added in calcularTotal.',
     });
   });

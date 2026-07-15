@@ -1,15 +1,20 @@
 import type { CommitInfo } from './CommitInfo.js';
 
+export type SupportedLanguage = 'javascript' | 'typescript' | 'jsx' | 'tsx';
+
 export interface MergeConflict {
+  repositoryPath: string;
   filePath: string;
-  baseCode: string;
-  oursCode: string;
-  theirsCode: string;
+  language: SupportedLanguage;
+  base: string;
+  ours: string;
+  theirs: string;
   commits: {
     base: CommitInfo;
     ours: CommitInfo;
     theirs: CommitInfo;
   };
+  originalHash: string;
 }
 
 export interface ConflictRepository {

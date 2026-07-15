@@ -111,7 +111,7 @@ export class BabelAstAnalyzer implements AstAnalyzer {
       const functionName = key.replace('function:', '');
 
       if (!original) {
-        changes.push({ branch, nodeType: 'function', summary: `Function "${functionName}" was added.` });
+        changes.push({ branch, kind: 'function', location: functionName, summary: `Function "${functionName}" was added.` });
         continue;
       }
 
@@ -120,7 +120,8 @@ export class BabelAstAnalyzer implements AstAnalyzer {
         if (previous && previous !== parameter) {
           changes.push({
             branch,
-            nodeType: 'parameter',
+            kind: 'parameter',
+            location: functionName,
             summary: `Parameter "${previous}" was renamed to "${parameter}" in ${functionName}.`,
           });
         }
@@ -132,7 +133,8 @@ export class BabelAstAnalyzer implements AstAnalyzer {
         if (previous) {
           changes.push({
             branch,
-            nodeType: 'variable',
+            kind: 'variable',
+            location: functionName,
             summary: `Variable "${previous}" was renamed to "${name}" in ${functionName}.`,
           });
         }
@@ -142,7 +144,8 @@ export class BabelAstAnalyzer implements AstAnalyzer {
         if (!original.validations.has(validation)) {
           changes.push({
             branch,
-            nodeType: 'validation',
+            kind: 'validation',
+            location: functionName,
             summary: `Validation "${validation}" was added in ${functionName}.`,
           });
         }
@@ -151,7 +154,8 @@ export class BabelAstAnalyzer implements AstAnalyzer {
       if (!this.setsEqual(original.returns, current.returns)) {
         changes.push({
           branch,
-          nodeType: 'return',
+          kind: 'return',
+          location: functionName,
           summary: `Return expression was modified in ${functionName}.`,
         });
       }

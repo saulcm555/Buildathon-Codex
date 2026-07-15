@@ -54,12 +54,14 @@ describe('GitConflictRepository', () => {
     await writeFile(path.join(directory, 'carrito.js'), 'changed by reviewer\n');
     const secondHash = await repository.getFileHash('carrito.js');
 
-    expect(conflict.baseCode).toContain('monto');
-    expect(conflict.oursCode).toContain('subtotal');
-    expect(conflict.theirsCode).toContain('monto < 0');
+    expect(conflict.base).toContain('monto');
+    expect(conflict.ours).toContain('subtotal');
+    expect(conflict.theirs).toContain('monto < 0');
+    expect(conflict.language).toBe('javascript');
     expect(conflict.commits.ours.message).toBe('rename parameter');
     expect(conflict.commits.theirs.message).toBe('add validation');
     expect(firstHash).not.toBe(secondHash);
+    expect(conflict.originalHash).toBe(firstHash);
   });
 
   it('rejects a file without all three conflict stages', async () => {
