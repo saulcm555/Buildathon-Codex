@@ -10,6 +10,9 @@ import { DemoWorkflow } from "./DemoWorkflow.js";
 const port = Number(process.env.PORT ?? 3000);
 const allowedOrigins = new Set((process.env.ALLOWED_ORIGIN ?? "http://localhost:5173").split(",").map((origin) => origin.trim()).filter(Boolean));
 const app = express();
+// Render terminates TLS at one reverse proxy before forwarding requests here.
+// Trust only that hop so rate limiting can use the real client IP safely.
+app.set("trust proxy", 1);
 const workflow = new DemoWorkflow();
 const provider = createLlmProvider();
 const store = new MergeSessionStore();
