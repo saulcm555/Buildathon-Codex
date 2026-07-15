@@ -1,20 +1,27 @@
 {
   "name": "git-merge-semantic-agent",
   "version": "0.1.0",
-  "description": "Semantic Git conflict analysis and human-approved merge proposals.",
+  "description": "Revisa y resuelve conflictos de Git con contexto semántico y control humano.",
   "author": {
-    "name": "Buildathon Codex Team"
+    "name": "Buildathon Codex"
   },
+  "license": "MIT",
+  "keywords": ["git", "merge", "conflicts", "ast", "code-review"],
   "skills": "./skills/",
-  "interface": {
-    "displayName": "Git Merge Semantic Agent",
-    "shortDescription": "Proposes safe semantic Git merges.",
-    "longDescription": "Analyzes Git conflicts and generates human-reviewed merge proposals without automatic commits or pushes.",
-    "developerName": "Buildathon Codex Team",
-    "category": "Developer tools",
-    "capabilities": ["MCP"],
-    "defaultPrompt": ["Analyze this Git conflict and propose a semantic merge."]
-  },
   "mcpServers": "./.mcp.json",
-  "apps": "./.app.json"
+  "interface": {
+    "displayName": "Semantic Merge",
+    "shortDescription": "Resuelve conflictos Git con revisión humana.",
+    "longDescription": "Analiza conflictos de Git, explica los cambios de cada rama y propone un merge verificable antes de aplicar cambios.",
+    "developerName": "Buildathon Codex",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write", "Interactive"],
+    "defaultPrompt": [
+      "Analiza mis conflictos de Git con Semantic Merge.",
+      "Muéstrame una propuesta segura para este conflicto.",
+      "Abre el panel de revisión del merge actual."
+    ],
+    "brandColor": "#7C3AED"
+  }
+
 }

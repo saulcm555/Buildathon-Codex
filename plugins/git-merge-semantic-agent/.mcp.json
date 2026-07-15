@@ -1,4 +1,5 @@
 {
+
   "mcpServers": {
     "git-merge-semantic-agent": {
       "command": "npm",
