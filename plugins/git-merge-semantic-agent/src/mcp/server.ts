@@ -1,8 +1,11 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { CoreMergeWorkflow } from "../application/CoreMergeWorkflow.js";
 import { GenerateMergeProposal } from "../application/GenerateMergeProposal.js";
 import type { MergeWorkflowPort } from "../application/MergeWorkflowPort.js";
 import type { ConflictAnalysis } from "../domain/ConflictAnalysis.js";
@@ -101,21 +104,15 @@ function failure(error: unknown) {
   return { isError: true, content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }] };
 }
 
-class MissingCoreWorkflow implements MergeWorkflowPort {
-  async analyze(): Promise<ConflictAnalysis> {
-    throw new Error("Git/AST core is not connected yet. Inject the integrante 1 MergeWorkflowPort implementation when composing the server.");
-  }
-  async apply(): Promise<void> {
-    throw new Error("Safe file writer is not connected yet. Inject the integrante 1 MergeWorkflowPort implementation when composing the server.");
-  }
-}
-
 async function main(): Promise<void> {
-  const server = createMergeMcpServer(new MissingCoreWorkflow(), createLlmProvider());
+  const server = createMergeMcpServer(new CoreMergeWorkflow(), createLlmProvider());
   await server.connect(new StdioServerTransport());
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replace(/\\\\/g, "/")}`) {
+const executedDirectly = process.argv[1] !== undefined
+  && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+
+if (executedDirectly) {
   main().catch((error) => {
     console.error(error instanceof Error ? error.message : "Failed to start MCP server.");
     process.exitCode = 1;
