@@ -1,0 +1,20 @@
+{
+  "name": "git-merge-semantic-agent",
+  "version": "0.1.0",
+  "description": "Semantic Git conflict analysis and human-approved merge proposals.",
+  "author": {
+    "name": "Buildathon Codex Team"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Git Merge Semantic Agent",
+    "shortDescription": "Proposes safe semantic Git merges.",
+    "longDescription": "Analyzes Git conflicts and generates human-reviewed merge proposals without automatic commits or pushes.",
+    "developerName": "Buildathon Codex Team",
+    "category": "Developer tools",
+    "capabilities": ["MCP"],
+    "defaultPrompt": ["Analyze this Git conflict and propose a semantic merge."]
+  },
+  "mcpServers": "./.mcp.json",
+  "apps": "./.app.json"
+}

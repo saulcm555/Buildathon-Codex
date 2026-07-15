@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "git-merge-semantic-agent": {
+      "command": "npm",
+      "args": ["run", "start", "--prefix", "${pluginRoot}"],
+      "env": { "LLM_PROVIDER": "openai" }
+    }
+  }
+}
