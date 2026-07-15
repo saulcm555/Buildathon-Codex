@@ -1,0 +1,6 @@
+{
+  "semantic_merge": {
+    "command": "node",
+    "args": ["${PLUGIN_ROOT}/dist/mcp/server.js"]
+  }
+}

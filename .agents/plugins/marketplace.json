@@ -1,0 +1,20 @@
+{
+  "name": "buildathon-local",
+  "interface": {
+    "displayName": "Buildathon local"
+  },
+  "plugins": [
+    {
+      "name": "git-merge-semantic-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/git-merge-semantic-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
