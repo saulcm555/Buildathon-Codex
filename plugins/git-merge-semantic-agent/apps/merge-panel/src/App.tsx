@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Decision, MergeAnalysis, VersionName } from './types';
 import { mergeMcpClient } from './services/mcpClient';
-import { recordDecision } from './services/history';
+import { getAuthenticatedEmail, persistAnalysis, recordDecision, sendMagicLink } from './services/history';
+import { isSupabaseConfigured } from './services/supabase';
 
 const labels: Record<VersionName, string> = { base: 'Base', ours: 'Tu rama', theirs: 'Su rama' };
 
@@ -11,30 +12,47 @@ export default function App() {
   const [proposal, setProposal] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
+  const [email, setEmail] = useState('');
+  const [account, setAccount] = useState<string | null>(null);
+
+  useEffect(() => { void getAuthenticatedEmail().then(setAccount); }, []);
 
   async function analyze() {
     setBusy(true); setNotice('');
-    const result = await mergeMcpClient.analyze();
-    setAnalysis(result); setProposal(result.proposal); setBusy(false);
+    try {
+      const result = await mergeMcpClient.analyze();
+      const persisted = await persistAnalysis(result);
+      setAnalysis(persisted); setProposal(persisted.proposal);
+    } catch (error) { setNotice(errorMessage(error)); } finally { setBusy(false); }
   }
   async function regenerate() {
     if (!analysis) return;
-    setBusy(true); const result = await mergeMcpClient.regenerate(analysis.sessionId);
-    setAnalysis(result); setProposal(result.proposal); setBusy(false); setNotice('Nueva propuesta generada.');
+    setBusy(true);
+    try {
+      const result = await mergeMcpClient.regenerate(analysis.sessionId);
+      const persisted = await persistAnalysis({ ...result, databaseSessionId: analysis.databaseSessionId });
+      setAnalysis(persisted); setProposal(persisted.proposal); setNotice('Nueva propuesta generada.');
+    } catch (error) { setNotice(errorMessage(error)); } finally { setBusy(false); }
   }
   async function decide(decision: Decision) {
     if (!analysis) return;
     setBusy(true);
-    if (decision === 'accepted') await mergeMcpClient.apply(analysis.sessionId, proposal);
-    await recordDecision(analysis, decision, proposal);
-    setBusy(false);
-    setNotice(decision === 'accepted' ? 'Propuesta aplicada tras tu confirmación.' : decision === 'edited' ? 'Edición guardada para el historial.' : 'Propuesta rechazada; no se modificó ningún archivo.');
+    try {
+      if (decision === 'accepted') await mergeMcpClient.apply(analysis.sessionId, proposal);
+      await recordDecision(analysis, decision, proposal);
+      setNotice(decision === 'accepted' ? 'Propuesta aplicada tras tu confirmación.' : decision === 'edited' ? 'Edición guardada para el historial.' : 'Propuesta rechazada; no se modificó ningún archivo.');
+    } catch (error) { setNotice(errorMessage(error)); } finally { setBusy(false); }
+  }
+
+  async function login() {
+    try { setBusy(true); await sendMagicLink(email); setNotice('Revisa tu correo para confirmar el acceso al historial.'); }
+    catch (error) { setNotice(errorMessage(error)); } finally { setBusy(false); }
   }
 
   return <main className="shell">
     <header className="topbar">
       <div className="brand"><span className="mark">↯</span><span>Semantic <b>Merge</b></span><small>beta</small></div>
-      <div className="secure"><span>●</span> Revisión local y controlada</div>
+      <div className="secure">{account ? <><span>●</span> Historial: {account}</> : isSupabaseConfigured() ? <form onSubmit={(event) => { event.preventDefault(); void login(); }}><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@email.com" required /><button disabled={busy}>Guardar historial</button></form> : <><span>●</span> Revisión local y controlada</>}</div>
     </header>
     {!analysis ? <section className="hero">
       <p className="eyebrow">GIT CONFLICT INTELLIGENCE</p><h1>Un merge claro,<br /><em>sin perder contexto.</em></h1>
@@ -55,4 +73,8 @@ export default function App() {
       {notice && <div className="toast">✓ {notice}</div>}
     </section>}
   </main>;
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'No se pudo completar la operación.';
 }

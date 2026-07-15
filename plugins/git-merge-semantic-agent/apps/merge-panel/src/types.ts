@@ -18,6 +18,7 @@ export interface AstChange {
 
 export interface MergeAnalysis {
   sessionId: string;
+  databaseSessionId?: string;
   repository: string;
   filePath: string;
   fileHash: string;
