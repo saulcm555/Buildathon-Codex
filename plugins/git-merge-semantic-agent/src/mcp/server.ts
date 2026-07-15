@@ -1,7 +1,7 @@
-import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import dotenv from "dotenv";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -13,6 +13,11 @@ import type { MergeProposal, StoredMergeProposal } from "../domain/MergeProposal
 import type { LlmProvider } from "../domain/LlmProvider.js";
 import { createLlmProvider } from "../infrastructure/llm/LlmProviderFactory.js";
 import { validateMergedCode } from "../infrastructure/llm/validateProposal.js";
+
+// Always load the plugin-level .env, regardless of the directory from which
+// Codex or npm starts the MCP server. Shell variables retain precedence.
+const moduleDirectory = resolve(fileURLToPath(new URL(".", import.meta.url)));
+dotenv.config({ path: resolve(moduleDirectory, "../../.env") });
 
 interface SessionConflict { analysis: ConflictAnalysis; }
 
