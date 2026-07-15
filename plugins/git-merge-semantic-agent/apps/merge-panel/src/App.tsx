@@ -40,7 +40,7 @@ export default function App() {
     try {
       if (decision === 'accepted') await mergeMcpClient.apply(analysis.sessionId, proposal);
       await recordDecision(analysis, decision, proposal);
-      setNotice(decision === 'accepted' ? 'Propuesta aplicada tras tu confirmación.' : decision === 'edited' ? 'Edición guardada para el historial.' : 'Propuesta rechazada; no se modificó ningún archivo.');
+      setNotice(decision === 'accepted' ? 'Propuesta validada. La demo pública no modifica archivos ni GitHub.' : decision === 'edited' ? 'Edición guardada para el historial.' : 'Propuesta rechazada; no se modificó ningún archivo.');
     } catch (error) { setNotice(errorMessage(error)); } finally { setBusy(false); }
   }
 
@@ -68,7 +68,7 @@ export default function App() {
       </div>
       <section className="proposal card"><div className="proposal-title"><div><p className="eyebrow">PROPUESTA DE FUSIÓN</p><h2>Una solución que conserva ambos cambios</h2></div><button className="ghost" onClick={regenerate} disabled={busy}>↻ Nueva propuesta</button></div><p className="explanation">{analysis.explanation}</p><textarea value={proposal} onChange={(event) => setProposal(event.target.value)} spellCheck="false" aria-label="Código de la propuesta" />
         {analysis.warnings.map((warning) => <p className="warning" key={warning}>! {warning}</p>)}
-        <div className="actions"><button className="ghost danger" onClick={() => decide('rejected')} disabled={busy}>Rechazar</button><button className="ghost" onClick={() => decide('edited')} disabled={busy}>Guardar edición</button><button className="primary" onClick={() => decide('accepted')} disabled={busy}>Aceptar y aplicar <span>→</span></button></div>
+        <div className="actions"><button className="ghost danger" onClick={() => decide('rejected')} disabled={busy}>Rechazar</button><button className="ghost" onClick={() => decide('edited')} disabled={busy}>Guardar edición</button><button className="primary" onClick={() => decide('accepted')} disabled={busy}>Validar propuesta (demo) <span>→</span></button></div>
       </section>
       {notice && <div className="toast">✓ {notice}</div>}
     </section>}
