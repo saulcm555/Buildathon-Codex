@@ -39,5 +39,10 @@ app.post("/mcp", rateLimit({ windowMs: 60_000, limit: 30, standardHeaders: "draf
     void server.close();
   }
 });
+// The Streamable HTTP client optionally probes this endpoint with GET to see
+// whether the server provides a standalone SSE stream. This service replies
+// inline to POST requests, so acknowledge the optional probe without causing
+// a browser-console 405 error.
+app.get("/mcp", (_, res) => res.status(204).end());
 app.all("/mcp", (_, res) => res.status(405).json({ error: "Use POST for MCP requests." }));
 app.listen(port, "0.0.0.0", () => console.error(`Semantic Merge HTTP MCP listening on ${port}`));
