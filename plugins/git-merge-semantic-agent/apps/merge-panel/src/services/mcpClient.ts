@@ -39,7 +39,7 @@ async function client() {
   if (!endpoint) throw new Error('VITE_MCP_URL is not configured.');
   clientPromise ??= (async () => {
     const value = new Client({ name: 'semantic-merge-panel', version: '0.1.0' });
-    await value.connect(new StreamableHTTPClientTransport(new URL(endpoint)));
+    await value.connect(new StreamableHTTPClientTransport(new URL(endpoint, window.location.origin)));
     return value;
   })();
   return clientPromise;

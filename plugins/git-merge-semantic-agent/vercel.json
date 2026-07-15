@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "installCommand": "npm ci && npm --prefix apps/merge-panel ci",
+  "buildCommand": "npm --prefix apps/merge-panel run build",
+  "outputDirectory": "apps/merge-panel/dist"
+}
