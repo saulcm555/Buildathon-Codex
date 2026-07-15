@@ -21,7 +21,16 @@ type BackendAnalysis = {
 };
 type BackendProposal = { id: string; mergedCode: string; explanation: string; confidence: number; warnings: string[] };
 
-const endpoint = import.meta.env.VITE_MCP_URL as string | undefined;
+const configuredEndpoint = import.meta.env.VITE_MCP_URL?.trim();
+
+/**
+ * Accept either the public MCP endpoint or the Render service's base URL.
+ * This prevents a common deployment mistake where only the service URL is
+ * configured and requests are sent to its root instead of `/mcp`.
+ */
+const endpoint = configuredEndpoint
+  ? `${configuredEndpoint.replace(/\/+$/, '')}${configuredEndpoint.replace(/\/+$/, '').endsWith('/mcp') ? '' : '/mcp'}`
+  : undefined;
 let clientPromise: Promise<Client> | undefined;
 const analyses = new Map<string, BackendAnalysis>();
 const proposals = new Map<string, string>();
