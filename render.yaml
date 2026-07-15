@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: semantic-merge-mcp
+    runtime: node
+    rootDir: plugins/git-merge-semantic-agent
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:http
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.17.1
+      - key: LLM_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGIN
+        sync: false
