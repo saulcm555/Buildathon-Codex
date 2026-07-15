@@ -5,13 +5,14 @@ import rateLimit from "express-rate-limit";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { CoreMergeWorkflow } from "../application/CoreMergeWorkflow.js";
+import type { MergeWorkflowPort } from "../application/MergeWorkflowPort.js";
 import type { LlmProvider } from "../domain/LlmProvider.js";
 import { createLlmProvider } from "../infrastructure/llm/LlmProviderFactory.js";
 import { createMergeMcpServer, MergeSessionStore } from "./server.js";
 import { DemoWorkflow } from "./DemoWorkflow.js";
 
 const port = Number(process.env.PORT ?? 3000);
-const workflow = new DemoWorkflow();
 const store = new MergeSessionStore();
 let provider: LlmProvider | undefined;
 
@@ -32,11 +33,17 @@ function isSameOriginRequest(req: Request, origin: string) {
   return origin === `${protocol}://${req.header("host")}`;
 }
 
+function configuredWorkflow(): MergeWorkflowPort {
+  return process.env.MERGE_WORKFLOW === "core"
+    ? new CoreMergeWorkflow()
+    : new DemoWorkflow();
+}
+
 /**
  * Reusable MCP handler for a persistent local server and a Vercel Function.
  * The public workflow is read-only and never writes a visitor's files.
  */
-export function createMcpHttpApp() {
+export function createMcpHttpApp(workflow: MergeWorkflowPort = configuredWorkflow()) {
   const app = express();
   const allowedOrigins = configuredOrigins();
   app.disable("x-powered-by");
@@ -73,17 +80,23 @@ export function createMcpHttpApp() {
   return app;
 }
 
-export function createHttpServerApp() {
+export function createHttpServerApp(workflow: MergeWorkflowPort = configuredWorkflow()) {
   const app = express();
   app.disable("x-powered-by");
   app.get("/health", (_, res) => res.status(200).json({ status: "ok" }));
-  app.use("/mcp", createMcpHttpApp());
+  app.use("/mcp", createMcpHttpApp(workflow));
   return app;
+}
+
+export function startHttpServer(workflow: MergeWorkflowPort = configuredWorkflow(), host = "0.0.0.0") {
+  return createHttpServerApp(workflow).listen(port, host, () => {
+    console.error(`Semantic Merge HTTP MCP listening on http://${host}:${port}`);
+  });
 }
 
 const executedDirectly = process.argv[1] !== undefined
   && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 
 if (executedDirectly) {
-  createHttpServerApp().listen(port, "0.0.0.0", () => console.error(`Semantic Merge HTTP MCP listening on ${port}`));
+  startHttpServer();
 }

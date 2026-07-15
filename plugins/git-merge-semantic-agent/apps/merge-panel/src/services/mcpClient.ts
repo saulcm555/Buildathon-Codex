@@ -22,6 +22,7 @@ type BackendAnalysis = {
 type BackendProposal = { id: string; mergedCode: string; explanation: string; confidence: number; warnings: string[] };
 
 const configuredEndpoint = import.meta.env.VITE_MCP_URL?.trim();
+export const isLocalMergeMode = import.meta.env.VITE_LOCAL_MODE === 'true';
 
 /**
  * Accept either the public MCP endpoint or the Render service's base URL.
@@ -31,6 +32,8 @@ const configuredEndpoint = import.meta.env.VITE_MCP_URL?.trim();
 const endpoint = configuredEndpoint
   ? `${configuredEndpoint.replace(/\/+$/, '')}${configuredEndpoint.replace(/\/+$/, '').endsWith('/mcp') ? '' : '/mcp'}`
   : undefined;
+const repositoryPath = import.meta.env.VITE_REPOSITORY_PATH?.trim();
+const filePath = import.meta.env.VITE_FILE_PATH?.trim();
 let clientPromise: Promise<Client> | undefined;
 const analyses = new Map<string, BackendAnalysis>();
 const proposals = new Map<string, string>();
@@ -59,6 +62,13 @@ function text(content: Array<{ type: string; text?: string }>) {
   return content.find((item) => item.type === 'text')?.text;
 }
 
+function analysisTarget() {
+  if (!repositoryPath || !filePath) {
+    throw new Error('Configure VITE_REPOSITORY_PATH and VITE_FILE_PATH before analyzing a local conflict.');
+  }
+  return { repositoryPath, filePath };
+}
+
 function toPanel(analysis: BackendAnalysis, proposal: BackendProposal): MergeAnalysis {
   proposals.set(analysis.conflictId, proposal.id);
   return {
@@ -80,7 +90,7 @@ function toPanel(analysis: BackendAnalysis, proposal: BackendProposal): MergeAna
 export const mergeMcpClient: MergeMcpClient = {
   async analyze() {
     if (!endpoint) return demoAnalysis;
-    const analysis = await tool<BackendAnalysis>('analyze_conflict', { repositoryPath: 'demo://semantic-merge', filePath: 'src/services/payment.ts' });
+    const analysis = await tool<BackendAnalysis>('analyze_conflict', analysisTarget());
     const proposal = await tool<BackendProposal>('generate_merge_proposal', { conflictId: analysis.conflictId });
     analyses.set(analysis.conflictId, analysis);
     return toPanel(analysis, proposal);

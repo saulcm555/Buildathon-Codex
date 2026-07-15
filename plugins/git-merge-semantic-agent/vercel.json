@@ -1,6 +1,6 @@
 {
   "framework": null,
   "installCommand": "npm install --no-audit --no-fund && npm --prefix apps/merge-panel install --no-audit --no-fund",
-  "buildCommand": "VITE_MCP_URL=/api/mcp npm --prefix apps/merge-panel run build",
+  "buildCommand": "VITE_MCP_URL=/api/mcp VITE_REPOSITORY_PATH=demo://semantic-merge VITE_FILE_PATH=src/services/payment.ts npm --prefix apps/merge-panel run build",
   "outputDirectory": "apps/merge-panel/dist"
 }
