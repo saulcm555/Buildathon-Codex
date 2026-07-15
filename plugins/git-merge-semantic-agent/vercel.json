@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "installCommand": "npm install --no-audit --no-fund && npm --prefix apps/merge-panel install --no-audit --no-fund",
+  "buildCommand": "VITE_MCP_URL=/api/mcp npm --prefix apps/merge-panel run build",
+  "outputDirectory": "apps/merge-panel/dist"
+}
